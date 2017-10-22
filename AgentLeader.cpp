@@ -21,8 +21,8 @@ AgentLeader::AgentLeader(
 								max_turn_rate,
 								scale)
 {
-	//Steering()->WanderOn();
-	Steering()->ArriveOn();
+	Steering()->WanderOn();
+	Steering()->ArriveOff();
 }
 
 

@@ -74,14 +74,18 @@ private:
   bool  m_bRenderNeighbors;
   bool  m_bViewKeys;
   bool  m_bShowCellSpaceInfo;
+  bool  m_bEnableControl;
+  bool  m_bLeader2;
 
 
   void CreateObstacles();
 
   void CreateWalls();
 
-  
+  void AddAgentLeader();
+  void DeleteAgentLeader();
 
+  
 public:
   
   GameWorld(int cx, int cy);

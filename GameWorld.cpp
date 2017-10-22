@@ -39,9 +39,11 @@ GameWorld::GameWorld(int cx, int cy) :
 	m_bShowFPS(true),
 	m_dAvFrameTime(0),
 	m_pPath(NULL),
-	m_bRenderNeighbors(false),
+	m_bRenderNeighbors(true),
 	m_bViewKeys(false),
-	m_bShowCellSpaceInfo(false)
+	m_bShowCellSpaceInfo(false),
+	m_bEnableControl(false),
+	m_bLeader2(false)
 {
 
 	//setup the spatial subdivision class
@@ -139,31 +141,6 @@ GameWorld::GameWorld(int cx, int cy) :
 		//add it to the cell subdivision
 		m_pCellSpace->AddEntity(pVehicle);
 	}
-
-	//add another leader agent
-	//determine a random starting position
-	Vector2D SpawnPos2 = Vector2D(cx / 2.0 + RandomClamped()*cx / 2.0,
-		cy / 2.0 + RandomClamped()*cy / 2.0);
-
-	Vehicle* pLeader2 = new AgentLeader(this,
-		SpawnPos2,                 //initial position
-		RandFloat()*TwoPi,        //start rotation
-		Vector2D(0, 0),           //velocity
-		Prm.VehicleMass,          //mass
-		Prm.MaxSteeringForce,     //max force
-		Prm.MaxSpeed,             //max velocity
-		Prm.MaxTurnRatePerSecond, //max turn rate
-		Prm.VehicleScale);        //scale
-
-	pLeader2->SetScale(Vector2D(5, 5));
-	pLeader2->Steering()->ArriveOff();
-	pLeader2->Steering()->WanderOn();
-
-
-	m_Vehicles.push_back(pLeader2);
-
-	//add it to the cell subdivision
-	m_pCellSpace->AddEntity(pLeader2);
 
 	//create any obstacles or walls
 	//CreateObstacles();
@@ -293,6 +270,40 @@ void GameWorld::CreateObstacles()
 			}
 		}
 	}
+}
+
+
+//--------------------------- AddAgentLeader -----------------------------
+//
+//  Add another leader agent
+//------------------------------------------------------------------------
+void GameWorld::AddAgentLeader() {
+	
+	//determine a random starting position
+	Vector2D SpawnPos2 = Vector2D(m_cxClient / 2.0 + RandomClamped()*m_cxClient / 2.0,
+		m_cyClient / 2.0 + RandomClamped()*m_cyClient / 2.0);
+
+	Vehicle* pLeader2 = new AgentLeader(this,
+		SpawnPos2,                 //initial position
+		RandFloat()*TwoPi,        //start rotation
+		Vector2D(0, 0),           //velocity
+		Prm.VehicleMass,          //mass
+		Prm.MaxSteeringForce,     //max force
+		Prm.MaxSpeed,             //max velocity
+		Prm.MaxTurnRatePerSecond, //max turn rate
+		Prm.VehicleScale);        //scale
+
+	pLeader2->SetScale(Vector2D(5, 5));
+
+	m_Vehicles.push_back(pLeader2);
+
+	//add it to the cell subdivision
+	m_pCellSpace->AddEntity(pLeader2);
+}
+
+
+void GameWorld::DeleteAgentLeader() {
+	m_Vehicles.pop_back();
 }
 
 
@@ -602,6 +613,51 @@ void GameWorld::HandleMenuItems(WPARAM wParam, HWND hwnd)
 		}
 
 		CheckMenuItemAppropriately(hwnd, ID_MENU_SMOOTHING, m_Vehicles[0]->isSmoothingOn());
+	}
+
+	break;
+
+	case ID_AG_LEADER2:
+	{
+		m_bLeader2 = !m_bLeader2;
+
+		if (m_bLeader2) {
+			
+			AddAgentLeader();
+
+			//check the menu
+			ChangeMenuState(hwnd, ID_AG_LEADER2, MFS_CHECKED);
+		}
+		else {
+			
+			DeleteAgentLeader();
+
+			//uncheck the menu
+			ChangeMenuState(hwnd, ID_AG_LEADER2, MFS_UNCHECKED);
+		}
+	}
+
+	break;
+
+	case ID_AG_CONTROL:
+	{
+		m_bEnableControl = !m_bEnableControl;
+
+		if (m_bEnableControl && m_Vehicles[0]->Steering()->isWanderOn()) {
+			m_Vehicles[0]->Steering()->WanderOff();
+			m_Vehicles[0]->Steering()->ArriveOn();
+
+			//check the menu
+			ChangeMenuState(hwnd, ID_AG_CONTROL, MFS_CHECKED);
+		}
+		else {
+			m_Vehicles[0]->Steering()->WanderOn();
+			m_Vehicles[0]->Steering()->ArriveOff();
+
+			//uncheck the menu
+			ChangeMenuState(hwnd, ID_AG_CONTROL, MFS_UNCHECKED);
+		}
+
 	}
 
 	break;

@@ -42,7 +42,7 @@ private:
 
 protected:
   
-  //its location in the environment
+  //its location in the envir onment
   Vector2D m_vPos;
 
   Vector2D m_vScale;

@@ -124,8 +124,14 @@ void Vehicle::Render()
 	//render neighboring vehicles in different colors if requested
 	if (m_pWorld->RenderNeighbors())
 	{
-		if (ID() == 0) gdi->RedPen();
-		else if (IsTagged()) gdi->GreenPen();
+		if (/*ID() == 0 &&*/ Steering()->isWanderOn()) {
+			gdi->RedPen();
+		}
+		else if (/*ID() == 0 &&*/ Steering()->isArriveOn()) {
+			gdi->GreenPen();
+		}
+		//else if (IsTagged()) gdi->GreenPen();
+		//else gdi->BluePen();
 		else gdi->BluePen();
 	}
 
